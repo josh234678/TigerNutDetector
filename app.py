@@ -52,14 +52,22 @@ def predict():
     proba = clf.predict_proba([features])[0]
 
     label = CLASSES[pred]
-    display_label = "Tiger Nut" if label == "tiger_nut" else "Stone"
+
+    meta = {
+        "tiger_nut":     {"display": "Good Tiger Nut", "direction": "FLOW FREELY",  "action": "straight"},
+        "bad_tiger_nut": {"display": "Bad Tiger Nut",  "direction": "SORT LEFT",    "action": "left"},
+        "stone":         {"display": "Stone",           "direction": "SORT RIGHT",   "action": "right"},
+    }
 
     return jsonify({
-        "label": display_label,
-        "raw_label": label,
-        "confidence": round(float(proba[pred]) * 100, 1),
-        "tiger_nut_pct": round(float(proba[0]) * 100, 1),
-        "stone_pct": round(float(proba[1]) * 100, 1),
+        "label":           meta[label]["display"],
+        "raw_label":       label,
+        "direction":       meta[label]["direction"],
+        "action":          meta[label]["action"],
+        "confidence":      round(float(proba[pred]) * 100, 1),
+        "good_nut_pct":    round(float(proba[0]) * 100, 1),
+        "bad_nut_pct":     round(float(proba[1]) * 100, 1),
+        "stone_pct":       round(float(proba[2]) * 100, 1),
     })
 
 

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 DATASET_DIR = "dataset"
 MODEL_PATH = "tiger_nut_detector.pkl"
 IMG_SIZE = (128, 128)
-CLASSES = ["tiger_nut", "stone"]
+CLASSES = ["tiger_nut", "bad_tiger_nut", "stone"]
 
 
 def extract_features(image_path):
@@ -57,20 +57,23 @@ def load_dataset():
                 y.append(label)
                 counts[cls] += 1
 
-    print(f"\nDataset loaded: {counts['tiger_nut']} tiger nuts | {counts['stone']} stones")
+    summary = " | ".join(f"{cls}: {counts[cls]}" for cls in CLASSES)
+    print(f"\nDataset loaded: {summary}")
     return np.array(X), np.array(y)
 
 
 def plot_confusion(y_true, y_pred):
     cm = confusion_matrix(y_true, y_pred)
-    fig, ax = plt.subplots()
-    im = ax.imshow(cm, cmap="Blues")
-    ax.set_xticks([0, 1]); ax.set_yticks([0, 1])
-    ax.set_xticklabels(CLASSES); ax.set_yticklabels(CLASSES)
+    n = len(CLASSES)
+    fig, ax = plt.subplots(figsize=(n * 2, n * 2))
+    ax.imshow(cm, cmap="Blues")
+    ax.set_xticks(range(n)); ax.set_yticks(range(n))
+    labels = [c.replace("_", "\n") for c in CLASSES]
+    ax.set_xticklabels(labels); ax.set_yticklabels(labels)
     ax.set_xlabel("Predicted"); ax.set_ylabel("Actual")
     ax.set_title("Confusion Matrix")
-    for i in range(2):
-        for j in range(2):
+    for i in range(n):
+        for j in range(n):
             ax.text(j, i, cm[i, j], ha="center", va="center", color="black", fontsize=14)
     plt.tight_layout()
     plt.savefig("confusion_matrix.png")
