@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tiger Nut Detector</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      color: #fff;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #f5a623;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      margin-top: 8px;
+      color: #a0aec0;
+      font-size: 1rem;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(245,166,35,0.5);
+      border-radius: 14px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #f5a623;
+      background: rgba(245,166,35,0.05);
+    }
+
+    .upload-zone .icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .upload-zone p {
+      color: #a0aec0;
+      font-size: 0.95rem;
+    }
+
+    .upload-zone span {
+      color: #f5a623;
+      font-weight: 600;
+    }
+
+    #fileInput {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Preview */
+    #preview-wrap {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #preview-img {
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.1);
+      object-fit: cover;
+    }
+
+    #file-name {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #a0aec0;
+    }
+
+    /* Button */
+    .btn {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: #f5a623;
+      color: #1a1a2e;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:hover { opacity: 0.88; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Result */
+    #result {
+      display: none;
+      margin-top: 28px;
+      padding: 24px;
+      border-radius: 14px;
+      text-align: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    #result.tiger_nut {
+      background: rgba(72,187,120,0.12);
+      border: 1px solid rgba(72,187,120,0.4);
+    }
+
+    #result.stone {
+      background: rgba(229,62,62,0.12);
+      border: 1px solid rgba(229,62,62,0.4);
+    }
+
+    #result .result-icon { font-size: 2.8rem; margin-bottom: 8px; }
+
+    #result .result-label {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    #result.tiger_nut .result-label { color: #68d391; }
+    #result.stone .result-label { color: #fc8181; }
+
+    #result .result-conf {
+      font-size: 0.95rem;
+      color: #a0aec0;
+      margin-bottom: 20px;
+    }
+
+    /* Bars */
+    .bar-row { margin-bottom: 10px; text-align: left; }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #cbd5e0;
+      margin-bottom: 4px;
+    }
+
+    .bar-bg {
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    .bar-fill.nut { background: #68d391; }
+    .bar-fill.stone { background: #fc8181; }
+
+    /* Spinner */
+    .spinner {
+      display: none;
+      width: 28px; height: 28px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #f5a623;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 12px auto 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    footer {
+      margin-top: 40px;
+      color: #4a5568;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Tiger Nut Detector</h1>
+  <p>Upload an image to check if it's a tiger nut or a stone</p>
+</header>
+
+<div class="card">
+  <div class="upload-zone" id="dropZone">
+    <input type="file" id="fileInput" accept="image/*" />
+    <div class="icon">&#128247;</div>
+    <p><span>Click to upload</span> or drag &amp; drop</p>
+    <p>JPG, PNG, WEBP supported</p>
+  </div>
+
+  <div id="preview-wrap">
+    <img id="preview-img" src="" alt="Preview" />
+    <div id="file-name"></div>
+  </div>
+
+  <button class="btn" id="analyzeBtn" disabled>Analyze Image</button>
+  <div class="spinner" id="spinner"></div>
+
+  <div id="result">
+    <div class="result-icon" id="resultIcon"></div>
+    <div class="result-label" id="resultLabel"></div>
+    <div class="result-conf" id="resultConf"></div>
+
+    <div class="bar-row">
+      <div class="bar-label">
+        <span>Tiger Nut</span>
+        <span id="nutPct">0%</span>
+      </div>
+      <div class="bar-bg">
+        <div class="bar-fill nut" id="nutBar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="bar-row">
+      <div class="bar-label">
+        <span>Stone</span>
+        <span id="stonePct">0%</span>
+      </div>
+      <div class="bar-bg">
+        <div class="bar-fill stone" id="stoneBar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Tiger Nut Detection System &mdash; Packaging Quality Control</footer>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const dropZone  = document.getElementById('dropZone');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const previewWrap = document.getElementById('preview-wrap');
+  const previewImg  = document.getElementById('preview-img');
+  const fileName    = document.getElementById('file-name');
+  const spinner     = document.getElementById('spinner');
+  const result      = document.getElementById('result');
+
+  let selectedFile = null;
+
+  function showPreview(file) {
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      previewWrap.style.display = 'block';
+      fileName.textContent = file.name;
+      analyzeBtn.disabled = false;
+      result.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) showPreview(e.target.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) showPreview(e.dataTransfer.files[0]);
+  });
+
+  analyzeBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    analyzeBtn.disabled = true;
+    spinner.style.display = 'block';
+    result.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const resp = await fetch('/predict', { method: 'POST', body: formData });
+      const data = await resp.json();
+
+      spinner.style.display = 'none';
+      analyzeBtn.disabled = false;
+
+      if (data.error) {
+        alert('Error: ' + data.error);
+        return;
+      }
+
+      result.className = data.raw_label;
+      result.style.display = 'block';
+
+      document.getElementById('resultIcon').textContent  = data.raw_label === 'tiger_nut' ? '&#127807;' : '&#129528;';
+      document.getElementById('resultLabel').textContent = data.label;
+      document.getElementById('resultConf').textContent  = `Confidence: ${data.confidence}%`;
+      document.getElementById('nutPct').textContent      = data.tiger_nut_pct + '%';
+      document.getElementById('stonePct').textContent    = data.stone_pct + '%';
+
+      setTimeout(() => {
+        document.getElementById('nutBar').style.width   = data.tiger_nut_pct + '%';
+        document.getElementById('stoneBar').style.width = data.stone_pct + '%';
+      }, 50);
+
+    } catch (err) {
+      spinner.style.display = 'none';
+      analyzeBtn.disabled = false;
+      alert('Something went wrong. Please try again.');
+    }
+  });
+</script>
+</body>
+</html>
