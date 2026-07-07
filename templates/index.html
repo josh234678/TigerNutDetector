@@ -3,195 +3,259 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tiger Nut Detector</title>
+  <title>Tiger Nut Sorting System</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-
     body{
       font-family:'Segoe UI',sans-serif;
       background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
-      min-height:100vh;
-      display:flex;flex-direction:column;align-items:center;
-      padding:32px 20px;color:#fff;
+      min-height:100vh;display:flex;flex-direction:column;align-items:center;
+      padding:28px 16px;color:#fff;
     }
 
-    header{text-align:center;margin-bottom:28px;}
-    header h1{font-size:2rem;font-weight:700;color:#f5a623;letter-spacing:1px;}
-    header p{margin-top:6px;color:#a0aec0;font-size:0.95rem;}
+    header{text-align:center;margin-bottom:20px;}
+    header h1{font-size:1.9rem;font-weight:700;color:#f5a623;}
+    header p{margin-top:5px;color:#718096;font-size:0.88rem;}
 
-    /* Sorting diagram */
-    .diagram{
-      display:flex;align-items:center;justify-content:center;gap:0;
-      margin-bottom:28px;width:100%;max-width:520px;
-    }
-    .diag-lane{
-      flex:1;padding:10px 6px;border-radius:10px;text-align:center;font-size:0.78rem;font-weight:600;
-    }
-    .diag-lane.left{ background:rgba(237,137,54,0.15);border:1px solid rgba(237,137,54,0.4);color:#f6ad55;}
-    .diag-lane.mid { background:rgba(72,187,120,0.15);border:1px solid rgba(72,187,120,0.4);color:#68d391;margin:0 8px;}
-    .diag-lane.right{ background:rgba(229,62,62,0.15);border:1px solid rgba(229,62,62,0.4);color:#fc8181;}
-    .diag-lane .arrow{font-size:1.3rem;display:block;margin-bottom:4px;}
-    .diag-lane .lbl{display:block;font-size:0.7rem;opacity:0.8;margin-top:2px;}
+    .layout{display:flex;gap:16px;width:100%;max-width:960px;align-items:flex-start;}
 
-    .card{
-      background:rgba(255,255,255,0.05);
-      backdrop-filter:blur(10px);
-      border:1px solid rgba(255,255,255,0.1);
-      border-radius:20px;padding:32px;
-      width:100%;max-width:520px;
-    }
+    /* LEFT PANEL */
+    .panel-left{flex:1;min-width:0;}
 
+    /* STATS ROW */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+    .stat-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+      border-radius:12px;padding:12px 8px;text-align:center;}
+    .stat-box .num{font-size:1.8rem;font-weight:700;line-height:1;}
+    .stat-box .lbl{font-size:0.7rem;color:#718096;margin-top:4px;text-transform:uppercase;}
+    .stat-box.good .num{color:#68d391;}
+    .stat-box.bad  .num{color:#f6ad55;}
+    .stat-box.stone .num{color:#fc8181;}
+    .stat-box.total .num{color:#90cdf4;}
+
+    /* CONVEYOR */
+    .conveyor-wrap{
+      background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);
+      border-radius:14px;padding:16px;margin-bottom:16px;
+    }
+    .conveyor-title{font-size:0.78rem;color:#718096;margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;}
+    .conveyor{display:flex;align-items:stretch;gap:0;height:90px;border-radius:10px;overflow:hidden;}
+    .lane{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      font-size:0.78rem;font-weight:600;transition:all 0.3s ease;position:relative;gap:4px;}
+    .lane .arrow{font-size:1.6rem;transition:transform 0.3s;}
+    .lane .lane-lbl{font-size:0.68rem;opacity:0.7;}
+    .lane.left-lane {background:rgba(237,137,54,0.12);border:1px solid rgba(237,137,54,0.25);color:#f6ad55;}
+    .lane.mid-lane  {background:rgba(72,187,120,0.12);border:1px solid rgba(72,187,120,0.25) ;color:#68d391;margin:0 6px;}
+    .lane.right-lane{background:rgba(229,62,62,0.12) ;border:1px solid rgba(229,62,62,0.25) ;color:#fc8181;}
+
+    .lane.active-left  {background:rgba(237,137,54,0.45);border-color:#f6ad55;box-shadow:0 0 18px rgba(237,137,54,0.4);}
+    .lane.active-mid   {background:rgba(72,187,120,0.45);border-color:#68d391;box-shadow:0 0 18px rgba(72,187,120,0.4);}
+    .lane.active-right {background:rgba(229,62,62,0.45) ;border-color:#fc8181;box-shadow:0 0 18px rgba(229,62,62,0.4);}
+
+    /* Upload */
+    .card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+      border-radius:16px;padding:24px;}
     .upload-zone{
-      border:2px dashed rgba(245,166,35,0.5);border-radius:14px;
-      padding:36px 20px;text-align:center;cursor:pointer;
-      transition:all 0.2s ease;position:relative;
+      border:2px dashed rgba(245,166,35,0.45);border-radius:12px;
+      padding:28px 16px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;
     }
-    .upload-zone:hover,.upload-zone.dragover{
-      border-color:#f5a623;background:rgba(245,166,35,0.05);
-    }
-    .upload-zone .icon{font-size:2.6rem;margin-bottom:10px;}
-    .upload-zone p{color:#a0aec0;font-size:0.92rem;}
+    .upload-zone:hover,.upload-zone.dragover{border-color:#f5a623;background:rgba(245,166,35,0.05);}
+    .upload-zone .icon{font-size:2.2rem;margin-bottom:8px;}
+    .upload-zone p{color:#a0aec0;font-size:0.88rem;}
     .upload-zone span{color:#f5a623;font-weight:600;}
     #fileInput{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 
-    #preview-wrap{display:none;margin-top:18px;text-align:center;}
-    #preview-img{max-width:100%;max-height:220px;border-radius:10px;border:2px solid rgba(255,255,255,0.1);object-fit:cover;}
-    #file-name{margin-top:6px;font-size:0.82rem;color:#a0aec0;}
+    #preview-wrap{display:none;margin-top:14px;text-align:center;}
+    #preview-img{max-width:100%;max-height:180px;border-radius:8px;border:2px solid rgba(255,255,255,0.1);object-fit:cover;}
+    #file-name{margin-top:5px;font-size:0.78rem;color:#718096;}
 
-    .btn{
-      display:block;width:100%;margin-top:18px;padding:13px;
-      background:#f5a623;color:#1a1a2e;font-size:1rem;font-weight:700;
-      border:none;border-radius:10px;cursor:pointer;transition:opacity 0.2s;
-    }
-    .btn:hover{opacity:0.88;}
-    .btn:disabled{opacity:0.4;cursor:not-allowed;}
+    .btn-row{display:flex;gap:10px;margin-top:14px;}
+    .btn{flex:1;padding:12px;font-size:0.95rem;font-weight:700;border:none;border-radius:9px;cursor:pointer;transition:opacity 0.2s;}
+    .btn-analyze{background:#f5a623;color:#1a1a2e;}
+    .btn-reset  {background:rgba(255,255,255,0.1);color:#a0aec0;border:1px solid rgba(255,255,255,0.15);}
+    .btn:hover{opacity:0.82;}
+    .btn:disabled{opacity:0.35;cursor:not-allowed;}
 
-    .spinner{
-      display:none;width:26px;height:26px;
-      border:3px solid rgba(255,255,255,0.2);border-top-color:#f5a623;
-      border-radius:50%;animation:spin 0.7s linear infinite;margin:12px auto 0;
-    }
+    .spinner{display:none;width:24px;height:24px;border:3px solid rgba(255,255,255,0.2);
+      border-top-color:#f5a623;border-radius:50%;animation:spin 0.7s linear infinite;margin:10px auto 0;}
 
-    /* Result card */
-    #result{display:none;margin-top:24px;border-radius:14px;overflow:hidden;animation:fadeIn 0.4s ease;}
-
-    .result-header{padding:20px 24px;text-align:center;}
-    #result.good   .result-header{background:rgba(72,187,120,0.18);border:1px solid rgba(72,187,120,0.35);}
-    #result.bad    .result-header{background:rgba(237,137,54,0.18);border:1px solid rgba(237,137,54,0.35);}
-    #result.stone  .result-header{background:rgba(229,62,62,0.18);border:1px solid rgba(229,62,62,0.35);}
-
-    .result-icon{font-size:2.4rem;margin-bottom:6px;}
-    .result-label{font-size:1.5rem;font-weight:700;margin-bottom:4px;}
+    /* Result */
+    #result{display:none;margin-top:16px;border-radius:12px;overflow:hidden;animation:fadeIn 0.35s ease;}
+    .result-header{padding:16px 20px;text-align:center;}
+    #result.good  .result-header{background:rgba(72,187,120,0.18);border:1px solid rgba(72,187,120,0.35);}
+    #result.bad   .result-header{background:rgba(237,137,54,0.18);border:1px solid rgba(237,137,54,0.35);}
+    #result.stone .result-header{background:rgba(229,62,62,0.18) ;border:1px solid rgba(229,62,62,0.35);}
+    .result-icon{font-size:2rem;margin-bottom:4px;}
+    .result-label{font-size:1.3rem;font-weight:700;}
     #result.good  .result-label{color:#68d391;}
     #result.bad   .result-label{color:#f6ad55;}
     #result.stone .result-label{color:#fc8181;}
+    .result-conf{font-size:0.82rem;color:#a0aec0;margin-top:3px;}
+    .dir-badge{display:inline-block;margin-top:10px;padding:5px 16px;
+      border-radius:99px;font-size:0.85rem;font-weight:700;}
+    #result.good  .dir-badge{background:#276749;color:#9ae6b4;}
+    #result.bad   .dir-badge{background:#7b341e;color:#fbd38d;}
+    #result.stone .dir-badge{background:#742a2a;color:#feb2b2;}
+    .bars{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.07);}
+    .bar-row{margin-bottom:8px;}
+    .bar-label{display:flex;justify-content:space-between;font-size:0.78rem;color:#cbd5e0;margin-bottom:3px;}
+    .bar-bg{background:rgba(255,255,255,0.08);border-radius:99px;height:6px;overflow:hidden;}
+    .bar-fill{height:100%;border-radius:99px;transition:width 0.5s ease;width:0%;}
+    .bar-fill.good {background:#68d391;}
+    .bar-fill.bad  {background:#f6ad55;}
+    .bar-fill.stone{background:#fc8181;}
 
-    .result-conf{font-size:0.88rem;color:#a0aec0;}
+    /* RIGHT PANEL — history log */
+    .panel-right{width:240px;flex-shrink:0;}
+    .log-box{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);
+      border-radius:14px;padding:14px;height:100%;}
+    .log-title{font-size:0.75rem;color:#718096;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+    .log-list{list-style:none;max-height:560px;overflow-y:auto;}
+    .log-item{display:flex;justify-content:space-between;align-items:center;
+      padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.78rem;}
+    .log-item:last-child{border-bottom:none;}
+    .log-dir{font-weight:700;font-size:0.72rem;padding:2px 7px;border-radius:99px;}
+    .log-dir.STRAIGHT{background:#276749;color:#9ae6b4;}
+    .log-dir.LEFT    {background:#7b341e;color:#fbd38d;}
+    .log-dir.RIGHT   {background:#742a2a;color:#feb2b2;}
+    .log-time{color:#4a5568;font-size:0.7rem;}
 
-    /* Direction badge */
-    .direction-badge{
-      display:inline-block;margin-top:12px;
-      padding:6px 18px;border-radius:99px;font-size:0.9rem;font-weight:700;letter-spacing:0.5px;
+    .serial-notice{
+      font-size:0.72rem;color:#718096;text-align:center;margin-top:10px;
+      padding:8px;background:rgba(255,255,255,0.04);border-radius:8px;
     }
-    #result.good  .direction-badge{background:#276749;color:#9ae6b4;}
-    #result.bad   .direction-badge{background:#7b341e;color:#fbd38d;}
-    #result.stone .direction-badge{background:#742a2a;color:#feb2b2;}
+    .serial-notice code{color:#f5a623;}
 
-    /* Probability bars */
-    .bars{padding:18px 24px;border-top:1px solid rgba(255,255,255,0.07);}
-    .bar-row{margin-bottom:10px;}
-    .bar-label{display:flex;justify-content:space-between;font-size:0.82rem;color:#cbd5e0;margin-bottom:4px;}
-    .bar-bg{background:rgba(255,255,255,0.08);border-radius:99px;height:7px;overflow:hidden;}
-    .bar-fill{height:100%;border-radius:99px;transition:width 0.6s ease;width:0%;}
-    .bar-fill.good  {background:#68d391;}
-    .bar-fill.bad   {background:#f6ad55;}
-    .bar-fill.stone {background:#fc8181;}
-
+    @media(max-width:680px){
+      .layout{flex-direction:column;}
+      .panel-right{width:100%;}
+      .log-list{max-height:200px;}
+    }
     @keyframes spin{to{transform:rotate(360deg);}}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-
-    footer{margin-top:32px;color:#4a5568;font-size:0.78rem;text-align:center;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Tiger Nut Detector</h1>
-  <p>AI-powered sorting for packaging quality control</p>
+  <h1>Tiger Nut Sorting System</h1>
+  <p>AI-powered packaging quality control &mdash; 3-way sorting</p>
 </header>
 
-<!-- Sorting diagram -->
-<div class="diagram">
-  <div class="diag-lane left">
-    <span class="arrow">&#8592;</span>
-    Bad Tiger Nut
-    <span class="lbl">Sort Left</span>
-  </div>
-  <div class="diag-lane mid">
-    <span class="arrow">&#8595;</span>
-    Good Tiger Nut
-    <span class="lbl">Flow Freely</span>
-  </div>
-  <div class="diag-lane right">
-    <span class="arrow">&#8594;</span>
-    Stone
-    <span class="lbl">Sort Right</span>
-  </div>
-</div>
+<div class="layout">
 
-<div class="card">
-  <div class="upload-zone" id="dropZone">
-    <input type="file" id="fileInput" accept="image/*"/>
-    <div class="icon">&#128247;</div>
-    <p><span>Click to upload</span> or drag &amp; drop</p>
-    <p>JPG, PNG, WEBP supported</p>
-  </div>
+  <!-- LEFT -->
+  <div class="panel-left">
 
-  <div id="preview-wrap">
-    <img id="preview-img" src="" alt="Preview"/>
-    <div id="file-name"></div>
-  </div>
-
-  <button class="btn" id="analyzeBtn" disabled>Analyze Image</button>
-  <div class="spinner" id="spinner"></div>
-
-  <div id="result">
-    <div class="result-header">
-      <div class="result-icon" id="resultIcon"></div>
-      <div class="result-label" id="resultLabel"></div>
-      <div class="result-conf" id="resultConf"></div>
-      <div class="direction-badge" id="directionBadge"></div>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box total"><div class="num" id="statTotal">0</div><div class="lbl">Total</div></div>
+      <div class="stat-box good"> <div class="num" id="statGood">0</div> <div class="lbl">Good Nuts</div></div>
+      <div class="stat-box bad">  <div class="num" id="statBad">0</div>  <div class="lbl">Bad Nuts</div></div>
+      <div class="stat-box stone"><div class="num" id="statStone">0</div><div class="lbl">Stones</div></div>
     </div>
-    <div class="bars">
-      <div class="bar-row">
-        <div class="bar-label"><span>Good Tiger Nut</span><span id="goodPct">0%</span></div>
-        <div class="bar-bg"><div class="bar-fill good" id="goodBar"></div></div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label"><span>Bad Tiger Nut</span><span id="badPct">0%</span></div>
-        <div class="bar-bg"><div class="bar-fill bad" id="badBar"></div></div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label"><span>Stone</span><span id="stonePct">0%</span></div>
-        <div class="bar-bg"><div class="bar-fill stone" id="stoneBar"></div></div>
+
+    <!-- Conveyor diagram -->
+    <div class="conveyor-wrap">
+      <div class="conveyor-title">Sorting Output</div>
+      <div class="conveyor">
+        <div class="lane left-lane" id="laneLeft">
+          <span class="arrow">&#8592;</span>
+          <span>Bad Tiger Nut</span>
+          <span class="lane-lbl">Sort Left</span>
+        </div>
+        <div class="lane mid-lane" id="laneMid">
+          <span class="arrow">&#8595;</span>
+          <span>Good Tiger Nut</span>
+          <span class="lane-lbl">Flow Freely</span>
+        </div>
+        <div class="lane right-lane" id="laneRight">
+          <span class="arrow">&#8594;</span>
+          <span>Stone</span>
+          <span class="lane-lbl">Sort Right</span>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<footer>Tiger Nut Detection System &mdash; Packaging Quality Control</footer>
+    <!-- Upload card -->
+    <div class="card">
+      <div class="upload-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*"/>
+        <div class="icon">&#128247;</div>
+        <p><span>Click to upload</span> or drag &amp; drop</p>
+        <p>JPG, PNG, WEBP &mdash; one item per image</p>
+      </div>
+
+      <div id="preview-wrap">
+        <img id="preview-img" src="" alt="Preview"/>
+        <div id="file-name"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-analyze" id="analyzeBtn" disabled>Analyze &amp; Sort</button>
+        <button class="btn btn-reset"   id="resetBtn">Reset Stats</button>
+      </div>
+      <div class="spinner" id="spinner"></div>
+
+      <div id="result">
+        <div class="result-header">
+          <div class="result-icon"  id="resultIcon"></div>
+          <div class="result-label" id="resultLabel"></div>
+          <div class="result-conf"  id="resultConf"></div>
+          <div class="dir-badge"    id="dirBadge"></div>
+        </div>
+        <div class="bars">
+          <div class="bar-row">
+            <div class="bar-label"><span>Good Tiger Nut</span><span id="goodPct">0%</span></div>
+            <div class="bar-bg"><div class="bar-fill good"  id="goodBar"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label"><span>Bad Tiger Nut</span><span id="badPct">0%</span></div>
+            <div class="bar-bg"><div class="bar-fill bad"   id="badBar"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label"><span>Stone</span><span id="stonePct">0%</span></div>
+            <div class="bar-bg"><div class="bar-fill stone" id="stoneBar"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="serial-notice">
+        Hardware integration: set <code>SERIAL_PORT=COM3</code> env var &mdash;
+        commands sent as <code>S</code> / <code>L</code> / <code>R</code> over serial
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT — history log -->
+  <div class="panel-right">
+    <div class="log-box">
+      <div class="log-title">Sort History</div>
+      <ul class="log-list" id="logList">
+        <li style="color:#4a5568;font-size:0.78rem;padding:6px 0;">No items sorted yet.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
 
 <script>
   const fileInput  = document.getElementById('fileInput');
   const dropZone   = document.getElementById('dropZone');
   const analyzeBtn = document.getElementById('analyzeBtn');
+  const resetBtn   = document.getElementById('resetBtn');
   const previewWrap= document.getElementById('preview-wrap');
   const previewImg = document.getElementById('preview-img');
-  const fileName   = document.getElementById('file-name');
+  const fileNameEl = document.getElementById('file-name');
   const spinner    = document.getElementById('spinner');
   const result     = document.getElementById('result');
+  const logList    = document.getElementById('logList');
 
   let selectedFile = null;
+
+  const ICONS  = { good:'&#127807;', bad:'&#9888;&#65039;', stone:'&#129528;' };
+  const ARROWS = { STRAIGHT:'&#8595; FLOW FREELY', LEFT:'&#8592; SORT LEFT', RIGHT:'&#8594; SORT RIGHT' };
+  const CLASS_MAP = { tiger_nut:'good', bad_tiger_nut:'bad', stone:'stone' };
 
   function showPreview(file){
     selectedFile = file;
@@ -199,9 +263,10 @@
     reader.onload = e => {
       previewImg.src = e.target.result;
       previewWrap.style.display = 'block';
-      fileName.textContent = file.name;
+      fileNameEl.textContent = file.name;
       analyzeBtn.disabled = false;
       result.style.display = 'none';
+      clearLanes();
     };
     reader.readAsDataURL(file);
   }
@@ -214,9 +279,39 @@
     if(e.dataTransfer.files[0]) showPreview(e.dataTransfer.files[0]);
   });
 
-  const ICONS = { good:'&#127807;', bad:'&#9888;', stone:'&#129528;' };
-  const DIR_ARROWS = { good:'&#8595; FLOW FREELY', bad:'&#8592; SORT LEFT', stone:'&#8594; SORT RIGHT' };
-  const CLASS_MAP  = { tiger_nut:'good', bad_tiger_nut:'bad', stone:'stone' };
+  function clearLanes(){
+    ['laneLeft','laneMid','laneRight'].forEach(id =>
+      document.getElementById(id).classList.remove('active-left','active-mid','active-right'));
+  }
+
+  function activateLane(direction){
+    clearLanes();
+    const map = { LEFT:'laneLeft', STRAIGHT:'laneMid', RIGHT:'laneRight' };
+    const cls = { LEFT:'active-left', STRAIGHT:'active-mid', RIGHT:'active-right' };
+    const el = document.getElementById(map[direction]);
+    if(el){ el.classList.add(cls[direction]); }
+    setTimeout(clearLanes, 2000);
+  }
+
+  function updateStats(stats){
+    document.getElementById('statTotal').textContent = stats.total   || 0;
+    document.getElementById('statGood').textContent  = stats.good_nut|| 0;
+    document.getElementById('statBad').textContent   = stats.bad_nut || 0;
+    document.getElementById('statStone').textContent = stats.stone   || 0;
+
+    if(stats.history && stats.history.length){
+      logList.innerHTML = '';
+      [...stats.history].reverse().forEach(h => {
+        const li = document.createElement('li');
+        li.className = 'log-item';
+        li.innerHTML = `
+          <span style="color:#e2e8f0">${h.label.replace(' Tiger Nut','')}</span>
+          <span class="log-dir ${h.direction}">${h.direction}</span>
+          <span class="log-time">${h.timestamp}</span>`;
+        logList.appendChild(li);
+      });
+    }
+  }
 
   analyzeBtn.addEventListener('click', async () => {
     if(!selectedFile) return;
@@ -224,35 +319,41 @@
     spinner.style.display = 'block';
     result.style.display  = 'none';
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
+    const fd = new FormData();
+    fd.append('file', selectedFile);
 
     try {
-      const resp = await fetch('/predict', { method:'POST', body:formData });
+      const resp = await fetch('/predict', { method:'POST', body:fd });
       const data = await resp.json();
       spinner.style.display = 'none';
       analyzeBtn.disabled   = false;
 
       if(data.error){ alert('Error: ' + data.error); return; }
 
-      const cls = CLASS_MAP[data.raw_label];
+      // Activate conveyor lane
+      activateLane(data.direction);
+
+      // Show result card
+      const cls = CLASS_MAP[data.raw_label] || 'good';
       result.className = cls;
       result.style.display = 'block';
+      document.getElementById('resultIcon').innerHTML  = ICONS[cls];
+      document.getElementById('resultLabel').textContent= data.label;
+      document.getElementById('resultConf').textContent = `Confidence: ${data.confidence}%  |  Command: ${data.command}`;
+      document.getElementById('dirBadge').innerHTML    = ARROWS[data.direction] || data.direction;
 
-      document.getElementById('resultIcon').innerHTML     = ICONS[cls];
-      document.getElementById('resultLabel').textContent  = data.label;
-      document.getElementById('resultConf').textContent   = 'Confidence: ' + data.confidence + '%';
-      document.getElementById('directionBadge').innerHTML = DIR_ARROWS[cls];
-
-      document.getElementById('goodPct').textContent  = data.good_nut_pct  + '%';
-      document.getElementById('badPct').textContent   = data.bad_nut_pct   + '%';
-      document.getElementById('stonePct').textContent = data.stone_pct     + '%';
-
+      document.getElementById('goodPct').textContent  = data.good_nut_pct + '%';
+      document.getElementById('badPct').textContent   = data.bad_nut_pct  + '%';
+      document.getElementById('stonePct').textContent = data.stone_pct    + '%';
       setTimeout(() => {
-        document.getElementById('goodBar').style.width  = data.good_nut_pct  + '%';
-        document.getElementById('badBar').style.width   = data.bad_nut_pct   + '%';
-        document.getElementById('stoneBar').style.width = data.stone_pct     + '%';
+        document.getElementById('goodBar').style.width  = data.good_nut_pct + '%';
+        document.getElementById('badBar').style.width   = data.bad_nut_pct  + '%';
+        document.getElementById('stoneBar').style.width = data.stone_pct    + '%';
       }, 50);
+
+      // Refresh stats
+      const statsResp = await fetch('/stats');
+      updateStats(await statsResp.json());
 
     } catch(err){
       spinner.style.display = 'none';
@@ -260,6 +361,23 @@
       alert('Something went wrong. Please try again.');
     }
   });
+
+  resetBtn.addEventListener('click', async () => {
+    await fetch('/reset', { method:'POST' });
+    clearLanes();
+    result.style.display = 'none';
+    ['statTotal','statGood','statBad','statStone'].forEach(id =>
+      document.getElementById(id).textContent = '0');
+    logList.innerHTML = '<li style="color:#4a5568;font-size:0.78rem;padding:6px 0;">No items sorted yet.</li>';
+  });
+
+  // Poll stats every 5s (for live_sort.py mode)
+  setInterval(async () => {
+    try {
+      const r = await fetch('/stats');
+      updateStats(await r.json());
+    } catch(_){}
+  }, 5000);
 </script>
 </body>
 </html>
