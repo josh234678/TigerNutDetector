@@ -1,0 +1,15 @@
+[Unit]
+Description=Tiger Nut Sorting System
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/TigerNutDetector
+ExecStart=/home/pi/TigerNutDetector/venv/bin/python live_sort_pi.py --conf 0.65
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

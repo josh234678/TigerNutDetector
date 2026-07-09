@@ -1,0 +1,9 @@
+opencv-python-headless
+scikit-learn
+scikit-image
+numpy
+joblib
+flask
+gunicorn
+picamera2
+RPi.GPIO
