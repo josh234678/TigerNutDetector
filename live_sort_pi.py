@@ -26,10 +26,9 @@ MODEL_PATH     = "tiger_nut_detector.pkl"
 AUTO_INTERVAL  = 2.0   # seconds between captures in auto mode
 
 COLOR_BGR = {
-    "green":  (50,  205,  50),
-    "orange": (0,   165, 255),
-    "red":    (0,     0, 220),
-    "grey":   (150, 150, 150),
+    "green": (50,  205,  50),
+    "red":   (0,     0, 220),
+    "grey":  (150, 150, 150),
 }
 
 
@@ -90,7 +89,7 @@ def draw_hud(frame, last_action, last_conf, stats, auto_mode):
                 (12, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.65, color, 1)
 
     # Direction arrow (top right)
-    arrow = {"LEFT": "<--", "RIGHT": "-->", "STRAIGHT": " || "}.get(last_action["direction"], "?")
+    arrow = {"RIGHT": "-->", "STRAIGHT": " || "}.get(last_action["direction"], "?")
     cv2.putText(frame, arrow, (w - 100, 48),
                 cv2.FONT_HERSHEY_SIMPLEX, 1.1, color, 3)
 
@@ -98,7 +97,6 @@ def draw_hud(frame, last_action, last_conf, stats, auto_mode):
     cv2.rectangle(frame, (0, h - 82), (w, h), (15, 15, 15), -1)
     stat_txt = (f"Total: {stats['total']}   "
                 f"Good: {stats['good_nut']}   "
-                f"Bad: {stats['bad_nut']}   "
                 f"Stone: {stats['stone']}")
     cv2.putText(frame, stat_txt, (10, h - 54),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
@@ -188,7 +186,6 @@ def run(use_usb=False, conf_threshold=0.65, sim=False):
     print(f"\n=== Session Summary ===")
     print(f"Total items  : {s['total']}")
     print(f"Good nuts    : {s['good_nut']}")
-    print(f"Bad nuts     : {s['bad_nut']}")
     print(f"Stones       : {s['stone']}")
 
 

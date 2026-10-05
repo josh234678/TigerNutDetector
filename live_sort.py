@@ -18,10 +18,9 @@ from sorter import SortingController, SORT_RULES
 MODEL_PATH = "tiger_nut_detector.pkl"
 
 COLOR_MAP = {
-    "green":  (50,  205, 50),
-    "orange": (0,   165, 255),
-    "red":    (0,   0,   220),
-    "grey":   (150, 150, 150),
+    "green": (50,  205, 50),
+    "red":   (0,   0,   220),
+    "grey":  (150, 150, 150),
 }
 
 INSTRUCTION = "[SPACE] = capture & sort   [R] = reset stats   [Q] = quit"
@@ -39,15 +38,14 @@ def draw_overlay(frame, action, confidence, stats):
                 cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
 
     # Direction arrow
-    arrow_map = {"STRAIGHT": "v", "LEFT": "<", "RIGHT": ">", "STRAIGHT": "v"}
-    arrow = {"LEFT": "<--", "RIGHT": "-->", "STRAIGHT": " | "}.get(action["direction"], "?")
+    arrow = {"RIGHT": "-->", "STRAIGHT": " | "}.get(action["direction"], "?")
     cv2.putText(frame, arrow, (w - 90, 45),
                 cv2.FONT_HERSHEY_SIMPLEX, 1.2, color, 3)
 
     # Stats panel at bottom
     cv2.rectangle(frame, (0, h - 80), (w, h), (20, 20, 20), -1)
     cv2.putText(frame, f"Total: {stats['total']}   Good: {stats['good_nut']}   "
-                       f"Bad: {stats['bad_nut']}   Stone: {stats['stone']}",
+                       f"Stone: {stats['stone']}",
                 (10, h - 52), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
     cv2.putText(frame, INSTRUCTION, (10, h - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (120, 120, 120), 1)

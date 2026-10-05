@@ -69,8 +69,7 @@ def predict():
         "action":       action["direction"].lower(),
         "confidence":   confidence,
         "good_nut_pct": round(float(proba[0]) * 100, 1),
-        "bad_nut_pct":  round(float(proba[1]) * 100, 1),
-        "stone_pct":    round(float(proba[2]) * 100, 1),
+        "stone_pct":    round(float(proba[1]) * 100, 1),
     })
 
 

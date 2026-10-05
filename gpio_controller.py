@@ -2,12 +2,10 @@
 GPIO controller for the Tiger Nut sorting machine.
 
 Physical wiring (BCM pin numbering):
-  GPIO 17  -->  LEFT relay  (bad tiger nut deflector)
   GPIO 27  -->  RIGHT relay (stone deflector)
   GPIO 22  -->  Green LED   (good nut indicator)
-  GPIO 23  -->  Orange LED  (bad nut indicator)
   GPIO 24  -->  Red LED     (stone indicator)
-  GPIO 25  -->  Buzzer      (alert on bad nut / stone)
+  GPIO 25  -->  Buzzer      (alert on stone)
 
 Relay logic:
   - Relay module is ACTIVE HIGH (most common)
@@ -27,10 +25,8 @@ import logging
 log = logging.getLogger(__name__)
 
 # BCM GPIO pin assignments
-PIN_LEFT_RELAY  = 17   # bad tiger nut → left
-PIN_RIGHT_RELAY = 27   # stone         → right
+PIN_RIGHT_RELAY = 27   # stone    → right
 PIN_LED_GREEN   = 22   # good nut LED
-PIN_LED_ORANGE  = 23   # bad nut LED
 PIN_LED_RED     = 24   # stone LED
 PIN_BUZZER      = 25   # alert buzzer
 
@@ -44,8 +40,8 @@ try:
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     OUTPUT_PINS = [
-        PIN_LEFT_RELAY, PIN_RIGHT_RELAY,
-        PIN_LED_GREEN, PIN_LED_ORANGE, PIN_LED_RED,
+        PIN_RIGHT_RELAY,
+        PIN_LED_GREEN, PIN_LED_RED,
         PIN_BUZZER,
     ]
     GPIO.setup(OUTPUT_PINS, GPIO.OUT, initial=GPIO.LOW)
@@ -76,12 +72,6 @@ def _fire(relay_pin, led_pin, buzz=False):
             _pulse(PIN_BUZZER, 0.15)
 
     threading.Thread(target=_run, daemon=True).start()
-
-
-def sort_left():
-    """Activate left deflector — bad tiger nut."""
-    log.info("ACTION: LEFT deflector fired (bad nut)")
-    _fire(PIN_LEFT_RELAY, PIN_LED_ORANGE, buzz=True)
 
 
 def sort_right():

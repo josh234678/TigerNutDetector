@@ -3,7 +3,7 @@ import numpy as np
 from skimage.feature import local_binary_pattern
 
 IMG_SIZE = (128, 128)
-CLASSES = ["tiger_nut", "bad_tiger_nut", "stone"]
+CLASSES = ["tiger_nut", "stone"]
 
 
 def _compute_features(img):
@@ -54,6 +54,12 @@ def extract_features(image_path):
     if img is None:
         return None
     return _compute_features(img)
+
+
+# Expected length of the feature vector _compute_features() returns, so
+# callers (train.py, app.py) can fail loudly on a mismatch instead of
+# scikit-learn raising an opaque "X has N features" error at predict time.
+FEATURE_DIM = 32 * 3 + 10 + 18 + 6
 
 
 def extract_features_from_bytes(img_bytes):

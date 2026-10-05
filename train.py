@@ -1,41 +1,18 @@
 import os
-import cv2
 import numpy as np
-from skimage.feature import local_binary_pattern
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import joblib
 import matplotlib.pyplot as plt
 
+# Single source of truth for feature extraction and class labels, shared
+# with app.py / predict.py / live_sort*.py so training and inference can
+# never disagree on the feature vector shape again.
+from utils import extract_features, CLASSES, IMG_SIZE
+
 DATASET_DIR = "dataset"
 MODEL_PATH = "tiger_nut_detector.pkl"
-IMG_SIZE = (128, 128)
-CLASSES = ["tiger_nut", "bad_tiger_nut", "stone"]
-
-
-def extract_features(image_path):
-    img = cv2.imread(image_path)
-    if img is None:
-        return None
-
-    img = cv2.resize(img, IMG_SIZE)
-
-    # Color features — HSV histogram (captures warm-brown vs cool-grey difference)
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    color_feats = []
-    bins = [32, 32, 32]
-    for ch, b in zip(range(3), bins):
-        hist = cv2.calcHist([hsv], [ch], None, [b], [0, 256])
-        hist = hist.flatten() / (hist.sum() + 1e-6)
-        color_feats.extend(hist)
-
-    # Texture features — LBP (captures wrinkled tiger nut vs smooth stone)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    lbp = local_binary_pattern(gray, P=8, R=1, method="uniform")
-    lbp_hist, _ = np.histogram(lbp.ravel(), bins=10, range=(0, 10), density=True)
-
-    return np.concatenate([color_feats, lbp_hist])
 
 
 def load_dataset():

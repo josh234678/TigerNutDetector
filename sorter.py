@@ -7,14 +7,12 @@ log = logging.getLogger(__name__)
 
 # Sorting rules: classification -> physical command
 SORT_RULES = {
-    "tiger_nut":     {"command": "S", "direction": "STRAIGHT", "color": "green",  "label": "Good Tiger Nut"},
-    "bad_tiger_nut": {"command": "L", "direction": "LEFT",     "color": "orange", "label": "Bad Tiger Nut"},
-    "stone":         {"command": "R", "direction": "RIGHT",    "color": "red",    "label": "Stone"},
-    "uncertain":     {"command": "S", "direction": "STRAIGHT", "color": "grey",   "label": "Uncertain - Manual Check"},
+    "tiger_nut": {"command": "S", "direction": "STRAIGHT", "color": "green", "label": "Good Tiger Nut"},
+    "stone":     {"command": "R", "direction": "RIGHT",    "color": "red",   "label": "Stone"},
+    "uncertain": {"command": "S", "direction": "STRAIGHT", "color": "grey",  "label": "Uncertain - Manual Check"},
 }
 
 # S = Straight (good nut flows freely)
-# L = Left deflector activated (bad nut)
 # R = Right deflector activated (stone)
 
 
@@ -57,9 +55,7 @@ class SortingController:
         # GPIO output (Raspberry Pi)
         if self._use_gpio:
             cmd = action["command"]
-            if cmd == "L":
-                self._gpio.sort_left()
-            elif cmd == "R":
+            if cmd == "R":
                 self._gpio.sort_right()
             else:
                 self._gpio.sort_straight()
@@ -94,7 +90,6 @@ class SortingController:
         return {
             "total":        self.stats["total"],
             "good_nut":     self.stats["tiger_nut"],
-            "bad_nut":      self.stats["bad_tiger_nut"],
             "stone":        self.stats["stone"],
             "uncertain":    self.stats["uncertain"],
             "history":      self.history[-20:],
